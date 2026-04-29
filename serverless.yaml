@@ -1,0 +1,29 @@
+org: scoobies
+service: calorie-lens-backend
+frameworkVersion: "4"
+
+provider:
+  name: aws
+  stage: prod
+  region: ap-south-1
+  runtime: nodejs24.x
+
+  environment:
+    CURRENT_AWS_REGION: ap-south-1
+    TABLE_NAME: calorie-lens-data-table
+
+  iam: ${file(aws/iam.yaml)}
+
+plugins:
+  - serverless-offline
+
+functions:
+  storageApi:
+    handler: src/storage/handler.handler
+    events:
+      - httpApi:
+          path: /storage/{proxy+}
+          method: ANY
+
+resources:
+  - ${file(aws/database.yaml)}

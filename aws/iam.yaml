@@ -1,0 +1,21 @@
+role:
+  statements:
+    - Effect: Allow
+      Action:
+        - bedrock:InvokeModel
+        - bedrock:InvokeModelWithResponseStream
+      Resource:
+        - "*"
+    - Effect: Allow
+      Action:
+        - ssm:GetParameter
+        - ssm:GetParameters
+      Resource:
+        - "*"
+    - Effect: Allow
+      Action:
+        - dynamodb:*
+      Resource:
+        - Fn::GetAtt:
+            - CalorieLensDataTable
+            - Arn
