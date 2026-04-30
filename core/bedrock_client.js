@@ -18,19 +18,16 @@ export async function invokeModel(imageBuffer) {
   const base64Image = optimizedBuffer.toString("base64");
 
   const command = new InvokeModelCommand({
-    modelId: "google.gemma-3-12b-it",
+    modelId: "anthropic.claude-haiku-4-5-20251001-v1:0",
     contentType: "application/json",
     accept: "application/json",
     body: JSON.stringify({
+      anthropic_version: "bedrock-2023-05-31",
+      max_tokens: 1000,
       messages: [
-        { role: "system", content: [{ type: "text", text: systemPrompt }] },
         {
           role: "user",
           content: [
-            {
-              type: "text",
-              text: "Analyze this food image and return calorie details in JSON.",
-            },
             {
               type: "image",
               source: {
@@ -39,6 +36,7 @@ export async function invokeModel(imageBuffer) {
                 media_type: "image/webp",
               },
             },
+            { type: "text", text: systemPrompt },
           ],
         },
       ],
@@ -48,5 +46,5 @@ export async function invokeModel(imageBuffer) {
   const res = await llmClient.send(command);
   const result = JSON.parse(new TextDecoder().decode(res.body));
 
-  return JSON.parse(result.choices[0].message.content);
+  return result;
 }
