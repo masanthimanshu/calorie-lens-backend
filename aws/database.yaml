@@ -1,12 +1,11 @@
-Resources:
-  CalorieLensDataTable:
-    Type: AWS::DynamoDB::Table
-    Properties:
-      TableName: calorie-lens-data-table
-      BillingMode: PAY_PER_REQUEST
-      AttributeDefinitions:
-        - AttributeName: id
-          AttributeType: S
-      KeySchema:
-        - AttributeName: id
-          KeyType: HASH
+CalorieLensDataTable:
+  Type: AWS::DynamoDB::Table
+  Properties:
+    TableName: calorie-lens-data-table
+    BillingMode: PAY_PER_REQUEST
+    AttributeDefinitions:
+      - AttributeName: id
+        AttributeType: S
+    KeySchema:
+      - AttributeName: id
+        KeyType: HASH

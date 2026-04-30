@@ -11,6 +11,7 @@ provider:
   environment:
     CURRENT_AWS_REGION: ap-south-1
     TABLE_NAME: calorie-lens-data-table
+    BUCKET_NAME: calorie-lens-assets-bucket
 
   iam: ${file(aws/iam.yaml)}
 
@@ -26,4 +27,6 @@ functions:
           method: ANY
 
 resources:
-  - ${file(aws/database.yaml)}
+  Resources:
+    - ${file(aws/database.yaml)}
+    - ${file(aws/s3.yaml)}

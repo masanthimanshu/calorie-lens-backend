@@ -1,0 +1,15 @@
+CalorieLensAssetsBucket:
+  Type: AWS::S3::Bucket
+  Properties:
+    BucketName: calorie-lens-assets-bucket
+    LifecycleConfiguration:
+      Rules:
+        - Id: calorie-lens-assets-bucket-lifecycle
+          Status: Enabled
+          Prefix: "images/"
+          ExpirationInDays: 100
+          Transitions:
+            - StorageClass: GLACIER_IR
+              TransitionInDays: 10
+          AbortIncompleteMultipartUpload:
+            DaysAfterInitiation: 5
