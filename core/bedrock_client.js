@@ -20,11 +20,20 @@ export async function invokeModel(imageBuffer) {
     contentType: "application/json",
     accept: "application/json",
     body: JSON.stringify({
-      system_instruction: { text: systemPrompt },
       messages: [
         {
           role: "user",
-          content: [{ image: { format: "png", data: base64Image } }],
+          content: [
+            { type: "text", text: systemPrompt },
+            {
+              type: "image",
+              source: {
+                type: "base64",
+                data: base64Image,
+                media_type: "image/png",
+              },
+            },
+          ],
         },
       ],
     }),
