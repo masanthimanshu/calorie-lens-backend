@@ -5,7 +5,7 @@ import { S3Client, PutObjectCommand } from "@aws-sdk/client-s3";
 const s3Client = new S3Client({ region: process.env.CURRENT_AWS_REGION });
 
 export async function generateUploadUrl() {
-  const key = `${randomUUID()}.png`;
+  const key = `images/${randomUUID()}.png`;
 
   const command = new PutObjectCommand({
     Key: key,
