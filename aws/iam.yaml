@@ -23,6 +23,4 @@ role:
       Action:
         - s3:*
       Resource:
-        - Fn::GetAtt:
-            - CalorieLensAssetsBucket
-            - Arn
+        - arn:aws:s3:::calorie-lens-assets-bucket/*
