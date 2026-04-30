@@ -26,7 +26,4 @@ functions:
           path: /storage/{proxy+}
           method: ANY
 
-resources:
-  Resources:
-    - ${file(aws/database.yaml)}
-    - ${file(aws/s3.yaml)}
+resources: ${file(aws/resources.yaml)}
