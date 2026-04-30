@@ -1,26 +1,45 @@
 role:
   statements:
+    # AWS BEDROCK
     - Effect: Allow
       Action:
         - bedrock:InvokeModel
         - bedrock:InvokeModelWithResponseStream
       Resource:
         - "*"
+
+    # AWS SSM Paramter Store
     - Effect: Allow
       Action:
         - ssm:GetParameter
         - ssm:GetParameters
       Resource:
         - "*"
+
+    # AWS DynamoDB
     - Effect: Allow
       Action:
-        - dynamodb:*
+        - dynamodb:PutItem
+        - dynamodb:GetItem
+        - dynamodb:UpdateItem
+        - dynamodb:Query
       Resource:
         - Fn::GetAtt:
             - CalorieLensDataTable
             - Arn
+
+    # AWS S3
     - Effect: Allow
       Action:
-        - s3:*
+        - s3:PutObject
+        - s3:GetObject
       Resource:
         - arn:aws:s3:::calorie-lens-assets-bucket/*
+
+    # AWS Marketplace
+    - Effect: Allow
+      Action:
+        - aws-marketplace:ViewSubscriptions
+        - aws-marketplace:Subscribe
+      Resource:
+        - "*"

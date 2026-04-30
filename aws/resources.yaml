@@ -1,4 +1,5 @@
 Resources:
+  # AWS DynamoDB Table
   CalorieLensDataTable:
     Type: AWS::DynamoDB::Table
     Properties:
@@ -11,6 +12,7 @@ Resources:
         - AttributeName: id
           KeyType: HASH
 
+  # AWS S3 Bucket
   CalorieLensAssetsBucket:
     Type: AWS::S3::Bucket
     Properties:
