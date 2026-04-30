@@ -25,5 +25,14 @@ functions:
       - httpApi:
           path: /storage/{proxy+}
           method: ANY
+  processImage:
+    handler: src/processImage/handler.handler
+    events:
+      - s3:
+          bucket: calorie-lens-assets-bucket
+          event: s3:ObjectCreated:*
+          existing: true
+          rules:
+            - prefix: images/
 
 resources: ${file(aws/resources.yaml)}
