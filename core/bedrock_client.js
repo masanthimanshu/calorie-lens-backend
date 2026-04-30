@@ -1,3 +1,4 @@
+import { optimizeImage } from "#utils/optimize_image.js";
 import { getParameterValue } from "#core/parameter_store.js";
 import {
   InvokeModelCommand,
@@ -13,7 +14,8 @@ const llmClient = new BedrockRuntimeClient({
 });
 
 export async function invokeModel(imageBuffer) {
-  const base64Image = imageBuffer.toString("base64");
+  const optimizedBuffer = await optimizeImage(imageBuffer);
+  const base64Image = optimizedBuffer.toString("base64");
 
   const command = new InvokeModelCommand({
     modelId: "google.gemma-3-12b-it",
@@ -21,16 +23,20 @@ export async function invokeModel(imageBuffer) {
     accept: "application/json",
     body: JSON.stringify({
       messages: [
+        { role: "system", content: [{ type: "text", text: systemPrompt }] },
         {
           role: "user",
           content: [
-            { type: "text", text: systemPrompt },
+            {
+              type: "text",
+              text: "Analyze this food image and return calorie details in JSON.",
+            },
             {
               type: "image",
               source: {
                 type: "base64",
                 data: base64Image,
-                media_type: "image/png",
+                media_type: "image/webp",
               },
             },
           ],

@@ -9,11 +9,11 @@ import {
 const s3Client = new S3Client({ region: process.env.CURRENT_AWS_REGION });
 
 export async function generateImageUploadUrl() {
-  const key = `images/${randomUUID()}.png`;
+  const key = `images/${randomUUID()}.webp`;
 
   const command = new PutObjectCommand({
     Key: key,
-    ContentType: "image/png",
+    ContentType: "image/webp",
     Bucket: process.env.BUCKET_NAME,
   });
 
