@@ -25,6 +25,7 @@ functions:
       - httpApi:
           path: /storage/{proxy+}
           method: ANY
+
   processImage:
     handler: src/processImage/handler.handler
     events:
