@@ -1,29 +1,32 @@
 import { getParameterValue } from "#core/parameter_store.js";
-import messages from "#data/messages.json" with { type: "json" };
 import {
   InvokeModelCommand,
   BedrockRuntimeClient,
 } from "@aws-sdk/client-bedrock-runtime";
 
-const systemPrompt = await getParameterValue("/nfc-message/lambda/message");
+const systemPrompt = await getParameterValue(
+  "/calorie-lens/lambda/system-prompt",
+);
 
 const llmClient = new BedrockRuntimeClient({
   region: process.env.CURRENT_AWS_REGION,
 });
 
-export async function invokeModel(prompt) {
+export async function invokeModel(imageBuffer) {
+  const base64Image = imageBuffer.toString("base64");
+
   const command = new InvokeModelCommand({
-    modelId: "google.gemma-3-4b-it",
+    modelId: "amazon.nova-lite-v1:0",
     contentType: "application/json",
     accept: "application/json",
     body: JSON.stringify({
-      system_instruction: { text: systemPrompt },
-      messages: [...messages, { role: "user", content: prompt }],
+      inputText: systemPrompt,
+      inputImage: base64Image,
     }),
   });
 
   const res = await llmClient.send(command);
   const result = JSON.parse(new TextDecoder().decode(res.body));
 
-  return result.choices[0].message.content;
+  return result;
 }

@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { generateUploadUrl } from "#core/s3_client.js";
+import { generateImageUploadUrl } from "#core/s3_client.js";
 
 const routes = Router();
 
@@ -8,7 +8,7 @@ routes.get("/health", (req, res) => {
 });
 
 routes.get("/upload-url", async (req, res) => {
-  res.send(await generateUploadUrl());
+  res.send(await generateImageUploadUrl());
 });
 
 export default routes;
