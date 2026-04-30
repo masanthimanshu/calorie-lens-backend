@@ -5,6 +5,8 @@ import {
   BedrockRuntimeClient,
 } from "@aws-sdk/client-bedrock-runtime";
 
+const modelArn = await getParameterValue("/ai/claude-model-arn");
+
 const systemPrompt = await getParameterValue(
   "/calorie-lens/lambda/system-prompt",
 );
@@ -18,7 +20,7 @@ export async function invokeModel(imageBuffer) {
   const base64Image = optimizedBuffer.toString("base64");
 
   const command = new InvokeModelCommand({
-    modelId: "anthropic.claude-haiku-4-5-20251001-v1:0",
+    modelId: modelArn,
     contentType: "application/json",
     accept: "application/json",
     body: JSON.stringify({
