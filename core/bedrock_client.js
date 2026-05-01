@@ -44,5 +44,5 @@ export async function invokeModel(imageBuffer) {
   const res = await llmClient.send(command);
   const result = JSON.parse(new TextDecoder().decode(res.body));
 
-  return result;
+  return result.output.message.content[0].text;
 }
