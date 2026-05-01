@@ -25,7 +25,7 @@ export async function invokeModel(base64Image, dishName) {
     contentType: "application/json",
     accept: "application/json",
     body: JSON.stringify({
-      max_tokens: 500,
+      inferenceConfig: { max_new_tokens: 500, temperature: 0.2 },
       system: [{ text: systemPrompt }],
       messages: [
         {
