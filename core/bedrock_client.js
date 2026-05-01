@@ -1,4 +1,3 @@
-import { optimizeImage } from "#utils/optimize_image.js";
 import { getParameterValue } from "#core/parameter_store.js";
 import {
   InvokeModelCommand,
@@ -15,10 +14,7 @@ const llmClient = new BedrockRuntimeClient({
   region: process.env.CURRENT_AWS_REGION,
 });
 
-export async function invokeModel(imageBuffer) {
-  const optimizedBuffer = await optimizeImage(imageBuffer);
-  const base64Image = optimizedBuffer.toString("base64");
-
+export async function invokeModel(base64Image) {
   const command = new InvokeModelCommand({
     modelId: modelArn,
     contentType: "application/json",
