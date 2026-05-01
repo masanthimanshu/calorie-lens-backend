@@ -24,29 +24,16 @@ export async function invokeModel(imageBuffer) {
     contentType: "application/json",
     accept: "application/json",
     body: JSON.stringify({
-      anthropic_version: "bedrock-2023-05-31",
-      max_tokens: 1000,
-      messages: [
-        {
-          role: "user",
-          content: [
-            {
-              type: "image",
-              source: {
-                type: "base64",
-                data: base64Image,
-                media_type: "image/webp",
-              },
-            },
-            { type: "text", text: systemPrompt },
-          ],
-        },
-      ],
+      inputText: systemPrompt,
+      inputImage: {
+        format: "webp",
+        source: { bytes: base64Image },
+      },
     }),
   });
 
   const res = await llmClient.send(command);
   const result = JSON.parse(new TextDecoder().decode(res.body));
 
-  return result.content[0].text;
+  return result;
 }
