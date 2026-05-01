@@ -4,17 +4,22 @@ import {
   BedrockRuntimeClient,
 } from "@aws-sdk/client-bedrock-runtime";
 
-const modelArn = await getParameterValue("/ai/claude-model-arn");
-
-const systemPrompt = await getParameterValue(
-  "/calorie-lens/lambda/system-prompt",
-);
-
 const llmClient = new BedrockRuntimeClient({
-  region: process.env.CURRENT_AWS_REGION,
+  region: process.env.CURRENT_AWS_REGION || "us-east-1",
 });
 
-export async function invokeModel(base64Image) {
+async function getModelConfig() {
+  const [modelArn, systemPrompt] = await Promise.all([
+    getParameterValue("/ai/claude-model-arn"),
+    getParameterValue("/calorie-lens/lambda/system-prompt"),
+  ]);
+
+  return { modelArn, systemPrompt };
+}
+
+export async function invokeModel(base64Image, dishName) {
+  const { modelArn, systemPrompt } = await getModelConfig();
+
   const command = new InvokeModelCommand({
     modelId: modelArn,
     contentType: "application/json",
@@ -25,6 +30,7 @@ export async function invokeModel(base64Image) {
         {
           role: "user",
           content: [
+            { text: `The Dish Name is: ${dishName}` },
             {
               image: {
                 format: "webp",

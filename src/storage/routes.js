@@ -8,7 +8,7 @@ routes.get("/health", (req, res) => {
 });
 
 routes.get("/upload-url", async (req, res) => {
-  res.send(await generateImageUploadUrl());
+  res.send(await generateImageUploadUrl(req.headers["x-dish-name"]));
 });
 
 export default routes;
