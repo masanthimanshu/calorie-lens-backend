@@ -5,7 +5,7 @@ import {
   BedrockRuntimeClient,
 } from "@aws-sdk/client-bedrock-runtime";
 
-// const modelArn = await getParameterValue("/ai/claude-model-arn");
+const modelArn = await getParameterValue("/ai/claude-model-arn");
 
 const systemPrompt = await getParameterValue(
   "/calorie-lens/lambda/system-prompt",
@@ -20,15 +20,26 @@ export async function invokeModel(imageBuffer) {
   const base64Image = optimizedBuffer.toString("base64");
 
   const command = new InvokeModelCommand({
-    modelId: "amazon.nova-lite-v1:0",
+    modelId: modelArn,
     contentType: "application/json",
     accept: "application/json",
     body: JSON.stringify({
-      inputText: systemPrompt,
-      inputImage: {
-        format: "webp",
-        source: { bytes: base64Image },
-      },
+      messages: [
+        {
+          role: "user",
+          content: [
+            { type: "text", text: systemPrompt },
+            {
+              type: "image",
+              source: {
+                type: "base64",
+                data: base64Image,
+                media_type: "image/webp",
+              },
+            },
+          ],
+        },
+      ],
     }),
   });
 
