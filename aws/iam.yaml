@@ -19,10 +19,7 @@ role:
     # AWS DynamoDB
     - Effect: Allow
       Action:
-        - dynamodb:PutItem
-        - dynamodb:GetItem
-        - dynamodb:UpdateItem
-        - dynamodb:Query
+        - dynamodb:*
       Resource:
         - Fn::GetAtt:
             - CalorieLensDataTable
@@ -40,6 +37,7 @@ role:
     - Effect: Allow
       Action:
         - aws-marketplace:ViewSubscriptions
+        - aws-marketplace:Unsubscribe
         - aws-marketplace:Subscribe
       Resource:
         - "*"

@@ -36,4 +36,14 @@ functions:
           rules:
             - prefix: images/
 
+  sendMessage:
+    handler: src/sendMessage/handler.handler
+    events:
+      - stream:
+          type: dynamodb
+          arn:
+            Fn::GetAtt:
+              - CalorieLensDataTable
+              - StreamArn
+
 resources: ${file(aws/resources.yaml)}

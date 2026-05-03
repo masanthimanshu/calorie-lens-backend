@@ -17,7 +17,7 @@ async function getModelConfig() {
   return { modelArn, systemPrompt };
 }
 
-export async function invokeModel(base64Image, dishName) {
+export async function invokeModelForImage(base64Image, dishName) {
   const { modelArn, systemPrompt } = await getModelConfig();
 
   const command = new InvokeModelCommand({
@@ -49,3 +49,5 @@ export async function invokeModel(base64Image, dishName) {
 
   return result.output.message.content[0].text;
 }
+
+export async function invokeModelForText(prompt) {}

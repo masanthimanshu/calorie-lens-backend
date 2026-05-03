@@ -1,7 +1,7 @@
 import { logger } from "#core/runtime_logs.js";
 import { cleanJson } from "#utils/clean_json.js";
 import { getImageFromS3 } from "#core/s3_client.js";
-import { invokeModel } from "#core/bedrock_client.js";
+import { invokeModelForImage } from "#core/bedrock_client.js";
 import { optimizeImage } from "#utils/optimize_image.js";
 
 export async function processImage(key) {
@@ -11,7 +11,7 @@ export async function processImage(key) {
     const optimizedBuffer = await optimizeImage(s3Data.buffer);
     const base64Image = optimizedBuffer.toString("base64");
 
-    const result = await invokeModel(base64Image, s3Data.dish);
+    const result = await invokeModelForImage(base64Image, s3Data.dish);
 
     return cleanJson(result);
   } catch (error) {
