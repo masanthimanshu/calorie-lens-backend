@@ -5,7 +5,7 @@ import {
 } from "@aws-sdk/client-bedrock-runtime";
 
 const llmClient = new BedrockRuntimeClient({
-  region: process.env.CURRENT_AWS_REGION || "us-east-1",
+  region: process.env.CURRENT_AWS_REGION,
 });
 
 async function getModelConfig() {
@@ -32,12 +32,7 @@ export async function invokeModelForImage(base64Image, dishName) {
           role: "user",
           content: [
             { text: `The Dish Name is: ${dishName}` },
-            {
-              image: {
-                format: "webp",
-                source: { bytes: base64Image },
-              },
-            },
+            { image: { format: "webp", source: { bytes: base64Image } } },
           ],
         },
       ],
@@ -50,4 +45,21 @@ export async function invokeModelForImage(base64Image, dishName) {
   return result.output.message.content[0].text;
 }
 
-export async function invokeModelForText(prompt) {}
+export async function invokeModelForText(prompt) {
+  const command = new InvokeModelCommand({
+    modelId: "google.gemma-3-12b-it",
+    contentType: "application/json",
+    accept: "application/json",
+    body: JSON.stringify({
+      max_tokens: 100,
+      temperature: 0.8,
+      system_instruction: { text: "Write a message" },
+      messages: [{ role: "user", content: prompt }],
+    }),
+  });
+
+  const res = await llmClient.send(command);
+  const result = JSON.parse(new TextDecoder().decode(res.body));
+
+  return result.choices[0].message.content;
+}

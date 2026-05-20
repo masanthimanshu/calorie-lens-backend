@@ -8,11 +8,18 @@ role:
       Resource:
         - "*"
 
-    # AWS SSM Paramter Store
+    # AWS SSM Parameter Store
     - Effect: Allow
       Action:
         - ssm:GetParameter
         - ssm:GetParameters
+      Resource:
+        - "*"
+
+    # AWS Secrets Manager
+    - Effect: Allow
+      Action:
+        - secretsmanager:GetSecretValue
       Resource:
         - "*"
 

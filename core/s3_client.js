@@ -23,6 +23,17 @@ export async function generateImageUploadUrl(dish) {
   return { uploadUrl, key };
 }
 
+export async function generateImageViewUrl(key) {
+  const command = new GetObjectCommand({
+    Key: key,
+    Bucket: process.env.BUCKET_NAME,
+  });
+
+  const viewUrl = await getSignedUrl(s3Client, command, { expiresIn: 300 });
+
+  return viewUrl;
+}
+
 export async function getImageFromS3(key) {
   const command = new GetObjectCommand({
     Key: key,
