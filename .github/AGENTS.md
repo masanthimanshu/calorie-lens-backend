@@ -44,6 +44,76 @@ Common tasks and useful pointers
 - Image processing: `src/processImage/service.js` and `utils/optimize_image.js`.
 - DynamoDB consumers: `src/sendMessage/service.js`.
 
+Code patterns and conventions
+
+**Error handling and logging**
+
+All handlers and services follow a consistent error handling pattern: wrap in try-catch, log with `logger.error()`, then re-throw. Logs are formatted as JSON for CloudWatch parsing.
+
+```javascript
+import { logger } from "#core/runtime_logs.js";
+
+export const handler = async (event) => {
+  try {
+    // business logic
+  } catch (error) {
+    logger.error("Descriptive error message:", { error });
+    throw error;
+  }
+};
+```
+
+The logger outputs structured JSON with `level`, `message`, `time`, and optional data fields. Always include context (e.g., resource keys or IDs) in the data object for debugging.
+
+**AWS SDK v3 command pattern**
+
+All AWS clients use the command pattern: initialize the client once at module load, then call `client.send(new Command(...))` for each operation.
+
+```javascript
+import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
+import { DynamoDBDocumentClient, PutCommand } from "@aws-sdk/lib-dynamodb";
+
+const dbClient = new DynamoDBClient({ region: process.env.CURRENT_AWS_REGION });
+const docClient = DynamoDBDocumentClient.from(dbClient);
+
+export async function writeData(data) {
+  const params = { TableName: process.env.TABLE_NAME, Item: data };
+  await docClient.send(new PutCommand(params));
+}
+```
+
+Clients are initialized at module scope for performance. Use the helper functions in [core/](core/) rather than creating new client instances.
+
+**Parameter store configuration**
+
+Dynamic configuration is loaded from AWS Systems Manager Parameter Store at runtime. See [core/parameter_store.js](core/parameter_store.js) for the helper.
+
+```javascript
+import { getParameterValue } from "#core/parameter_store.js";
+
+async function getModelConfig() {
+  const [modelArn, systemPrompt] = await Promise.all([
+    getParameterValue("/ai/claude-model-arn"),
+    getParameterValue("/calorie-lens/lambda/system-prompt"),
+  ]);
+  return { modelArn, systemPrompt };
+}
+```
+
+Use `Promise.all()` to batch parameter lookups for efficiency.
+
+**HTTP request conventions**
+
+Express routes use custom headers for optional parameters. For example, the upload endpoint reads the dish name from the `x-dish-name` header:
+
+```javascript
+routes.get("/upload-url", async (req, res) => {
+  res.send(await generateImageUploadUrl(req.headers["x-dish-name"]));
+});
+```
+
+Always document custom header expectations in API comments or PR descriptions.
+
 Notes
 
 - There are currently no automated tests in the repository; prioritize clear, small commits and manual verification via `npm run dev` and relevant integration tests where possible.

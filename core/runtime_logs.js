@@ -1,6 +1,7 @@
 const time = () => new Date().toISOString();
 
 export const logger = {
+  // log info messages to cloudwatch logs
   info(msg, data) {
     console.log(
       JSON.stringify({
@@ -12,6 +13,7 @@ export const logger = {
     );
   },
 
+  // log error messages to cloudwatch logs
   error(msg, data) {
     console.error(
       JSON.stringify({

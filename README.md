@@ -1,149 +1,200 @@
 # Calorie Lens Backend
 
-A serverless Node.js backend for Calorie Lens that provides signed image upload URLs, processes food images from S3, invokes an AWS Bedrock model for inference, and stores results in DynamoDB.
+[![Node.js](https://img.shields.io/badge/node.js-24.x-green?logo=node.js)](https://nodejs.org/)
+[![Serverless Framework](https://img.shields.io/badge/serverless-4.38-orange?logo=serverless)](https://www.serverless.com/)
+[![AWS](https://img.shields.io/badge/AWS-serverless-orange?logo=amazon-aws)](https://aws.amazon.com/)
+
+A serverless Node.js backend that transforms food images into structured nutrition insights. Calorie Lens Backend handles secure image uploads, automated processing with AWS Bedrock AI, and persistent storage—enabling a seamless, image-first food logging experience.
 
 ## Table of Contents
 
-- [What the project does](#what-the-project-does)
-- [Why it is useful](#why-it-is-useful)
-- [Architecture](#architecture)
+- [What It Does](#what-it-does)
+- [Why Use It](#why-use-it)
 - [Getting Started](#getting-started)
-- [Configuration](#configuration)
-- [Usage](#usage)
-- [Deployment](#deployment)
-- [Where to get help](#where-to-get-help)
-- [Contributing](#contributing)
+  - [Prerequisites](#prerequisites)
+  - [Installation](#installation)
+  - [Local Development](#local-development)
+  - [Deployment](#deployment)
+- [API Documentation](#api-documentation)
+- [Architecture](#architecture)
 
-## What the project does
+---
 
-`calorie-lens-backend` is an AWS Serverless backend that:
+## What It Does
 
-- exposes an HTTP API for generating signed S3 upload URLs
-- listens for image uploads into an S3 bucket
-- retrieves and optimizes uploaded images
-- sends image data to an AWS Bedrock model for inference
-- saves processed results in a DynamoDB table
-- processes DynamoDB stream events for downstream messaging/logging
+Calorie Lens Backend is a fully serverless AWS application that:
 
-## Why it is useful
+- **Provides HTTP endpoints** for generating secure S3 upload URLs and health checks
+- **Automatically processes food images** when uploaded to S3 (resize, optimize)
+- **Invokes AI inference** using AWS Bedrock to analyze meal photos
+- **Persists results** in DynamoDB for analytics and UI consumption
+- **Handles event streams** for downstream logging, notifications, or data pipelines
 
-This backend enables an image-first food logging workflow using AWS-managed services:
+## Why Use It
 
-- fast upload flow with pre-signed S3 URLs
-- automatic image processing and inference when new images arrive
-- persistent storage of processed results for analytics or UI consumption
-- local development support with `serverless-offline`
+This backend enables a modern, scalable food-logging experience:
 
-## Architecture
+- **Zero infrastructure management** — AWS Lambda scales automatically to millions of requests
+- **Fast image uploads** — Pre-signed S3 URLs enable direct browser uploads without backend proxying
+- **Intelligent analysis** — Bedrock integration provides AI-powered meal insights without managing models
+- **Event-driven architecture** — DynamoDB streams trigger downstream workflows automatically
+- **Local development** — Serverless Offline lets you test locally before deploying
+- **Infrastructure-as-code** — All AWS resources defined in version-controlled YAML
 
-Key components:
-
-- `src/storage/handler.js` — HTTP API entrypoint for upload URL generation and health checks
-- `src/storage/routes.js` — Express routes mounted under `/storage`
-- `src/processImage/handler.js` — S3 event handler for image processing
-- `src/processImage/service.js` — image retrieval, optimization, and Bedrock model invocation
-- `src/sendMessage/handler.js` — DynamoDB stream handler for downstream message processing
-- `core/` — shared AWS helpers for S3, DynamoDB, Bedrock, parameter store, and runtime logging
-- `aws/resources.yaml` — DynamoDB table and S3 bucket resource definitions
-- `serverless.yaml` — Serverless Framework configuration for deployment
+---
 
 ## Getting Started
 
-### Requirements
+### Prerequisites
 
-- Node.js 20+ (runtime target is `nodejs24.x`)
-- npm
-- AWS credentials configured locally
-- Access to AWS account with Bedrock, S3, DynamoDB, and IAM permissions
+- **Node.js 24.x** or higher (ESM support required)
+- **AWS Account** with credentials configured locally
+- **npm** or **yarn** for dependency management
 
-### Install dependencies
+### Installation
 
-```sh
-npm install
-```
+1. **Clone the repository**
 
-### Local development
+   ```bash
+   git clone https://github.com/scoobies/calorie-lens-backend.git
+   cd calorie-lens-backend
+   ```
 
-Use Serverless Offline for local API development:
+2. **Install dependencies**
 
-```sh
+   ```bash
+   npm install
+   ```
+
+3. **Set up environment variables**
+   Create a `.env` file in the project root (used by `serverless-offline` for local development):
+   ```bash
+   CURRENT_AWS_REGION=ap-south-1
+   TABLE_NAME=calorie-lens-data-table
+   BUCKET_NAME=calorie-lens-assets-bucket
+   ```
+
+### Local Development
+
+Run the development server with hot-reloading enabled:
+
+```bash
 npm run dev
 ```
 
-This starts the local HTTP API with `serverless-offline`.
+This starts Serverless Offline, which emulates AWS Lambda and API Gateway locally. The HTTP API will be available at `http://localhost:3000`.
 
-## Configuration
+**Test the storage API:**
 
-The backend relies on environment variables defined in `serverless.yaml`:
-
-- `CURRENT_AWS_REGION` — AWS region used by clients
-- `TABLE_NAME` — DynamoDB table name
-- `BUCKET_NAME` — S3 bucket name
-
-A local `.env` file can also set AWS environment values such as:
-
-```env
-AWS_PROFILE=serverless-user
-```
-
-For Bedrock configuration, the code reads parameter store keys:
-
-- `/ai/claude-model-arn`
-- `/calorie-lens/lambda/system-prompt`
-
-## Usage
-
-### Health check
-
-Request the health endpoint:
-
-```sh
+```bash
 curl http://localhost:3000/storage/health
+# Response: { "status": "Storage API route is working!" }
 ```
 
-### Generate an upload URL
+**Get a signed upload URL:**
 
-Request a signed URL for uploading a dish image:
-
-```sh
-curl -H "x-dish-name: Pasta" http://localhost:3000/storage/upload-url
+```bash
+curl -H "x-dish-name: pancakes" http://localhost:3000/storage/upload-url
 ```
 
-Response:
+For a detailed walkthrough of the codebase and development patterns, see [AGENTS.md](.github/AGENTS.md).
 
-```json
-{
-  "uploadUrl": "https://...",
-  "key": "images/<uuid>.webp"
-}
-```
+### Deployment
 
-Upload the image data directly to the returned URL.
+Deploy to AWS with a single command:
 
-### Image processing flow
-
-Once an image is uploaded to the configured S3 bucket under `images/`, the `processImage` function triggers:
-
-- downloads the uploaded image
-- optimizes it with `sharp`
-- converts it to base64
-- invokes the Bedrock model
-- stores inference results in DynamoDB
-
-## Deployment
-
-Deploy the backend with Serverless Framework:
-
-```sh
+```bash
 npm run deploy
 ```
 
-The service name is configured as `calorie-lens-backend` in `serverless.yaml`.
+This uses the Serverless Framework to package and deploy all functions, HTTP routes, and AWS resources defined in [serverless.yaml](serverless.yaml).
 
-## Where to get help
+**Deployment parameters:**
 
-If you need assistance or want to report an issue, use the repository issue tracker.
+- **Stage:** `prod` (configurable in `serverless.yaml`)
+- **Region:** `ap-south-1` (configurable in `serverless.yaml`)
+- **Organization:** `scoobies` (update in `serverless.yaml` as needed)
 
-## Contributing
+---
 
-Contributions are welcome via pull requests. For code changes, follow the repository workflow and open an issue first if you need design guidance.
+## API Documentation
+
+### `GET /storage/health`
+
+Health check endpoint for monitoring.
+
+**Response:**
+
+```json
+{ "status": "Storage API route is working!" }
+```
+
+### `GET /storage/upload-url`
+
+Generates a pre-signed S3 URL for uploading an image.
+
+**Headers:**
+
+- `x-dish-name` (optional): Name of the dish being logged
+
+**Response:**
+
+```json
+{
+  "uploadUrl": "https://calorie-lens-assets-bucket.s3.amazonaws.com/...",
+  "key": "images/..."
+}
+```
+
+**Usage:**
+
+```bash
+# Get upload URL
+URL=$(curl -s -H "x-dish-name: pizza" http://localhost:3000/storage/upload-url | jq -r '.uploadUrl')
+
+# Upload image directly to S3
+curl -X PUT --data-binary @photo.jpg "$URL"
+
+# Backend automatically processes the image and runs inference
+```
+
+---
+
+## Architecture
+
+### System Components
+
+| Component                                  | Purpose                                                        |
+| ------------------------------------------ | -------------------------------------------------------------- |
+| **Storage API** (`src/storage/`)           | HTTP endpoints for URL generation and health checks            |
+| **Image Processing** (`src/processImage/`) | S3 event handler that retrieves, optimizes, and runs inference |
+| **Message Handler** (`src/sendMessage/`)   | DynamoDB stream consumer for downstream workflows              |
+| **Core Helpers** (`core/`)                 | Shared AWS clients, logging, and utilities                     |
+
+### Data Flow
+
+```
+User Upload
+    ↓
+HTTP API → Pre-signed S3 URL
+    ↓
+Browser uploads to S3
+    ↓
+S3 triggers Lambda (processImage)
+    ↓
+Download image → Optimize → Bedrock inference
+    ↓
+Save result to DynamoDB
+    ↓
+DynamoDB stream triggers Lambda (sendMessage)
+    ↓
+Log or send notifications
+```
+
+### Key Files
+
+- [serverless.yaml](serverless.yaml) — Function definitions and AWS resource mappings
+- [package.json](package.json) — Dependencies and build scripts
+- [core/](core/) — AWS clients for S3, DynamoDB, Bedrock, Secrets Manager, SSM
+- [aws/](aws/) — Infrastructure-as-code (DynamoDB table, S3 bucket, IAM policies)
+- [.github/AGENTS.md](.github/AGENTS.md) — Detailed technical reference for developers
