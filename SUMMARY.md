@@ -1,19 +1,19 @@
 # Calorie Lens Backend
 
-Serverless backend for an image-first nutrition platform that transforms food photos into structured insights. The project delivers secure uploads, automated image processing, and AI-powered analysis with a scalable, event-driven architecture built for modern application workflows.
+Serverless backend for an image-first nutrition platform that transforms food photos into structured nutrition insights. Built to support secure uploads, automated image processing, and AI-powered analysis with low operational overhead and strong scalability.
 
 ## Core Technologies
 
-Built with Node.js, Express, Serverless Framework, and AWS services including Lambda, API Gateway, S3, DynamoDB, Bedrock, IAM, Secrets Manager, and CloudWatch, using infrastructure-as-code and environment-driven configuration.
+Developed with Node.js, Express, Serverless Framework, and AWS Lambda, API Gateway, S3, DynamoDB, Bedrock, IAM, Secrets Manager, Parameter Store, and CloudWatch using infrastructure-as-code and environment-driven configuration.
 
 ## Architecture & Capabilities
 
-Designed around a modular, serverless architecture with pre-signed S3 upload flows, S3-triggered processing, backend state persistence, downstream messaging workflows, and observability through CloudWatch to support reliability, security, and scalability.
+Implemented a modular, event-driven architecture with pre-signed S3 upload flows, S3-triggered image optimization and inference, persistent backend state, downstream messaging workflows, and CloudWatch-based observability to improve security, reliability, and maintainability.
 
 ## Key Contributions
 
-Implemented storage endpoints for health checks and upload URL generation, automated image optimization and Bedrock-based inference, and reusable cloud integrations that simplify deployment and maintenance.
+Delivered storage endpoints for health checks and upload URL generation, reusable AWS integrations, and serverless workflows that streamline image ingestion and downstream processing for a modern food-logging experience.
 
 ## Impact
 
-Enabled fast, reliable food-image ingestion with minimal operational overhead while reducing manual effort in turning visual food data into usable backend state for analytics and product experiences.
+Enabled fast, reliable food-image ingestion with minimal manual effort, helping turn visual meal data into usable backend state for analytics, product experiences, and future automation.
