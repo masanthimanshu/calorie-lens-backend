@@ -1,4 +1,4 @@
-%23 Agent Instructions for Calorie Lens Backend
+# Agent Instructions for Calorie Lens Backend
 
 Purpose: provide concise, actionable guidance for AI coding agents working on this repository.
 
