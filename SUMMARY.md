@@ -1,110 +1,110 @@
 ## Executive Overview
 
-Calorie Lens Backend is a serverless Node.js application that converts food images into structured nutrition insights by orchestrating secure uploads, image optimization, AI inference, and persistent storage. It enables a seamless image-first food logging pipeline where users upload meal photos, the backend processes them automatically, and the results are stored for downstream consumption.
+Calorie Lens Backend is a serverless Node.js application that converts meal photos into structured nutrition insights by orchestrating secure S3 uploads, image optimization, managed AI inference, and event-driven persistence. It solves the problem of ingesting and analyzing food images without proxying files through the backend, enabling a scalable image-first food logging workflow.
 
-The primary goal is to enable an automated, event-driven meal image analysis workflow that minimizes infrastructure operations while maximizing scalability and security.
+The primary goal is to enable an automated, event-driven meal image analysis pipeline that minimizes infrastructure operations while maximizing scalability, security, and operational observability.
 
 ## Technical Stack Mapping
 
 - Languages: Node.js 24.x (ESM)
-  - Why: Modern AWS Lambda runtime support for native ECMAScript modules and current JavaScript language features.
+  - Why: Native AWS Lambda support for modern ECMAScript modules and asynchronous runtime features, enabling lightweight serverless functions.
 - Frameworks / Runtime: Serverless Framework, Express, serverless-http
-  - Why: Serverless Framework provides declarative AWS infrastructure-as-code and deployment orchestration, while Express with serverless-http delivers a lightweight HTTP API abstraction inside Lambda.
-- Cloud Services: AWS Lambda, AWS S3, AWS DynamoDB, AWS Bedrock, AWS SSM, AWS Secrets Manager, AWS IAM
-  - Why: Lambda enables pay-per-use compute for event-driven processing, S3 stores image assets securely, DynamoDB offers serverless NoSQL persistence and change streams, Bedrock provides managed AI inference, and SSM/Secrets Manager handle configuration and secrets without hardcoding values.
+  - Why: Serverless Framework provides declarative infrastructure-as-code for AWS resources and Lambda wiring, while Express with serverless-http offers an easy local HTTP API abstraction without introducing heavyweight server frameworks.
+- Cloud Services: AWS Lambda, Amazon S3, Amazon DynamoDB, DynamoDB Streams, AWS Bedrock Runtime, AWS Systems Manager Parameter Store, AWS Secrets Manager, AWS IAM
+  - Why: Lambda removes server management for compute, S3 stores image assets securely, DynamoDB offers serverless NoSQL persistence with streams for async processing, Bedrock supplies managed AI inference, and SSM/Secrets Manager externalize runtime configuration and secrets.
 - Databases: AWS DynamoDB
-  - Why: NoSQL document storage with pay-per-request billing and DynamoDB Streams enables scalable event-driven downstream processing without operational database management.
+  - Why: Pay-per-request, serverless NoSQL storage fits the event-driven processing model and removes the need for relational database provisioning.
 - Image Processing: sharp
-  - Why: High-performance server-side image optimization and format conversion reduces payload size and improves inference reliability.
+  - Why: High-performance image resizing and WebP conversion reduces payload size and standardizes inference inputs.
 - AWS SDK v3: Modular clients for Bedrock, DynamoDB, S3, SSM, Secrets Manager
-  - Why: Modular SDK reduces package weight and gives fine-grained access to AWS services.
+  - Why: Modular SDK improves cold-start performance and keeps Lambda bundles smaller by importing only the necessary service clients.
 - Utility Libraries: dotenv, axios, zod
-  - Why: dotenv supports local environment configuration, axios is available for HTTP integration, and zod provides a validation-ready dependency if schema validation is required.
+  - Why: dotenv manages local environment variables for development, axios is available for HTTP client work, and zod supports future schema validation needs.
 - Dev Tooling: ESLint, serverless-offline
-  - Why: ESLint maintains code quality and serverless-offline enables local Lambda/API Gateway emulation for development.
+  - Why: ESLint enforces JavaScript quality rules, while serverless-offline supports local testing of Lambda handlers and HTTP endpoints before deployment.
 
 ## Engineering Achievements (The Gold Mine)
 
 ### Secure Direct Uploads
 
-- Challenge: Prevent the backend from becoming a file proxy while still accepting image uploads.
-- Action: Implemented pre-signed S3 upload URLs using `@aws-sdk/s3-request-presigner` and metadata propagation for dish names.
-- Result: Achieved direct browser-to-S3 uploads with temporary credentials, reduced backend bandwidth, and preserved context for downstream processing.
+- Challenge: Avoid backend file proxying while still receiving image uploads and metadata.
+- Action: Implemented pre-signed S3 PUT URL generation in `core/s3_client.js`, exposing `GET /storage/upload-url` and attaching dish metadata via object metadata headers.
+- Result: Direct browser-to-S3 upload flow reduced backend bandwidth, simplified scaling, and preserved dish context for downstream processing.
 
 ### Event-Driven Image Processing Pipeline
 
-- Challenge: Automatically process newly uploaded images in a scalable, reliable way.
-- Action: Configured S3 `ObjectCreated:*` event triggers in `serverless.yaml` to invoke a Lambda function that downloads the image, optimizes it, and invokes AI inference.
-- Result: Converted uploads into a hands-off event-driven pipeline that scales with demand and prevents manual polling.
+- Challenge: Trigger image processing automatically when new images are uploaded.
+- Action: Configured an S3 event source for `s3:ObjectCreated:*` in `serverless.yaml` to invoke `src/processImage/handler.js` on upload completion.
+- Result: Image ingestion became fully asynchronous and scalable, eliminating polling and enabling Lambda-based compute only when data arrives.
 
-### AI Inference Integration with AWS Bedrock
+### Managed AI Inference with AWS Bedrock
 
-- Challenge: Analyze food images using a managed generative AI service without embedding model details.
-- Action: Built `invokeModelForImage()` in `core/bedrock_client.js` to fetch model configuration from SSM, construct Bedrock inference payloads, and decode model responses.
-- Result: Separated configuration from code, enabling dynamic model ARN and prompt management while leveraging Bedrock for AI-driven meal analysis.
+- Challenge: Perform food image understanding using a managed AI model while keeping runtime configuration dynamic.
+- Action: Built `core/bedrock_client.js` to retrieve model ARN and system prompt from AWS SSM, prepare Bedrock inference payloads, and decode JSON responses.
+- Result: Achieved centralized AI configuration and rapid model switching without code changes, while outsourcing inference complexity to Bedrock.
 
-### Image Optimization Before Inference
+### Image Optimization and Input Normalization
 
-- Challenge: Ensure image data is efficient for upload and model ingestion.
-- Action: Used `sharp` in `src/processImage/service.js` to resize/optimize images, then encoded results as Base64 for Bedrock payloads.
-- Result: Reduced data transfer size and improved consistency of AI input format.
+- Challenge: Ensure uploaded images are optimized and consistent before sending to AI inference.
+- Action: Used `sharp` in `utils/optimize_image.js` to resize images to 512px width and encode them as WebP with quality tuning.
+- Result: Reduced data size, improved ingestion reliability, and standardized the image format passed to model inference.
 
-### Persistent Event Data Storage
+### Resilient Persistence with DynamoDB
 
-- Challenge: Store inference outputs reliably and enable downstream workflows.
-- Action: Implemented `writeData()` in `core/dynamo_client.js` with UUID primary keys, timestamp metadata, and conditional writes to DynamoDB.
-- Result: Achieved idempotent persistence with traceable records and support for DynamoDB Streams-driven automation.
+- Challenge: Persist AI results reliably and support downstream consumers.
+- Action: Implemented `writeData()` in `core/dynamo_client.js` using `DynamoDBDocumentClient`, UUID primary keys, ISO timestamps, and conditional writes.
+- Result: Created an idempotent persistence layer that supports auditability and triggers DynamoDB stream consumers for further processing.
 
-### Infrastructure-as-Code with Lifecycle Policies
+### Downstream Stream-Driven Notification Workflow
 
-- Challenge: Deploy complete AWS resources with reproducible configuration.
-- Action: Defined Lambda functions, S3 bucket lifecycle rules, DynamoDB stream configuration, and IAM permissions in `serverless.yaml` and `aws/resources.yaml`.
-- Result: Created a deployable, version-controlled cloud architecture that enforces retention and storage transitions.
+- Challenge: Process new inference records asynchronously after they are written to storage.
+- Action: Added a `sendMessage` Lambda triggered by DynamoDB Streams in `serverless.yaml`, parsing stream INSERT events in `src/sendMessage/handler.js`.
+- Result: Enabled a decoupled downstream workflow that can be extended into notifications, analytics, or messaging without blocking the main ingestion path.
 
-### Shared AWS Client Abstractions
+### Shared AWS Client Abstractions and Cleanup Logic
 
-- Challenge: Avoid duplication across functions and enforce consistent AWS access patterns.
-- Action: Created shared helper modules in `core/` for S3 presigned URLs, object retrieval, DynamoDB writes, Bedrock calls, and SSM parameter access.
-- Result: Centralized AWS integrations, simplified handler logic, and improved maintainability.
+- Challenge: Reduce duplication and keep function handlers thin.
+- Action: Centralized AWS service clients, runtime logging, parameter retrieval, and S3 operations in `core/`, while extracting JSON cleanup logic into `utils/clean_json.js`.
+- Result: Simplified handler code, improved maintainability, and encouraged reuse across serverless functions.
 
-### Logging and Observability
+### Structured Logging for Observability
 
-- Challenge: Provide meaningful runtime telemetry in a serverless environment.
-- Action: Built structured JSON logging utilities in `core/runtime_logs.js` for both `info` and `error` events.
-- Result: Enabled CloudWatch-compatible logging that supports debugging and operational monitoring.
+- Challenge: Provide actionable logs in serverless executions.
+- Action: Built lightweight JSON log wrappers in `core/runtime_logs.js` for structured `info` and `error` output.
+- Result: Logs are CloudWatch-compatible and include contextual metadata for faster incident analysis.
 
 ## Architectural Highlights
 
 ### Data Flow
 
-1. Client requests `/storage/upload-url`.
-2. Storage API generates a pre-signed S3 PUT URL and returns it to the client.
-3. Client uploads the image directly to S3 under `images/` prefix.
-4. S3 triggers `processImage` Lambda on object creation.
-5. Lambda downloads the object, optimizes the image, and invokes AWS Bedrock with base64-encoded image content.
-6. Inference results are cleaned and written to DynamoDB.
-7. DynamoDB Stream triggers the `sendMessage` Lambda for downstream notification or logging workflows.
+1. Client requests a signed upload URL from `GET /storage/upload-url`.
+2. Backend returns a pre-signed S3 PUT URL and object key.
+3. Client uploads the image directly to S3 under `images/<uuid>.webp`.
+4. S3 emits an `ObjectCreated:*` event, invoking `processImage` Lambda.
+5. Lambda downloads the image from S3, optimizes it, Base64-encodes it, and sends it to Bedrock.
+6. Bedrock returns inference text output, which is cleaned and written to DynamoDB.
+7. DynamoDB Stream fires `sendMessage` Lambda on INSERT events for downstream processing.
 
 ### Security Implementations
 
-- IAM role grants least-privilege access to S3, DynamoDB, Bedrock, SSM, and Secrets Manager.
-- S3 pre-signed URLs limit upload scope and expire after 5 minutes.
-- Model ARN and system prompt are retrieved at runtime from AWS SSM Parameter Store, avoiding hardcoded secrets.
-- The S3 bucket lifecycle rules enforce storage hygiene and reduce exposure by automatically expiring objects after 100 days.
+- IAM role grants least-privilege access to S3 objects, DynamoDB table operations, Bedrock invocation, and SSM/Secrets Manager retrieval.
+- Pre-signed S3 URLs expire after 5 minutes, limiting upload window and attack surface.
+- Model ARN and prompts are stored in AWS SSM Parameter Store, avoiding hardcoded configuration and supporting secret management.
+- S3 lifecycle policies automatically expire image objects after 100 days and transition older objects to Glacier IR, improving data governance.
 
 ### Scalability Approach
 
-- Serverless Lambda functions scale automatically with concurrent S3 events and stream records.
-- DynamoDB Pay-Per-Request billing removes provisioning concerns and supports burst traffic.
-- Direct browser-to-S3 uploads offload file transfer load from compute.
-- The event-driven architecture decouples upload ingestion, image processing, AI inference, and downstream message handling.
+- Serverless Lambda functions scale automatically per incoming S3 events and DynamoDB stream records.
+- DynamoDB Pay-Per-Request billing supports unpredictable workloads without capacity provisioning.
+- Direct upload architecture offloads file transfer traffic from Lambda and API infrastructure.
+- Event-driven decoupling separates ingestion, inference, storage, and messaging so each layer can scale independently.
 
 ## Potential KPI Suggestions
 
 - End-to-end image processing latency from upload completion to DynamoDB write.
 - Percentage of uploaded images successfully processed and persisted.
-- Deployment frequency or time to deploy a backend change via Serverless Framework.
-- Reduction in backend proxy bandwidth thanks to presigned S3 uploads.
-- AWS cost per processed image or monthly cost for the serverless pipeline.
-- Number of inference requests handled per hour/day under load.
-- Error rate or mean time to recover for Lambda image processing failures.
+- Time to deploy backend changes using Serverless Framework.
+- Reduction in backend bandwidth from direct S3 uploads.
+- Cost per image processed in the serverless pipeline.
+- Number of AI inference requests handled per hour/day.
+- Lambda error rate and mean time to recover from processing failures.

@@ -27,8 +27,9 @@ Key files and places to inspect first
 Project conventions (short)
 
 - Use ES module `import`/`export` syntax and path aliases declared in `package.json` (`#core/*`, `#data/*`, `#utils/*`).
-- Keep Serverless handlers minimal; place business logic in `service.js` alongside each handler.
-- Use `core/` helpers for AWS clients and centralized logging.
+- `src/storage/handler.js` exposes Express routes via `serverless-http`; route logic belongs in `src/storage/routes.js`.
+- Keep Serverless handlers minimal; place business logic in each function's `service.js`.
+- Use `core/` helpers for AWS clients and centralized logging rather than creating new clients everywhere.
 
 Agent checklist (what to do first)
 
@@ -36,7 +37,9 @@ Agent checklist (what to do first)
 2. Open the relevant handler and its `service.js` (listed above).
 3. Prefer existing `core/` helpers for AWS integrations; avoid adding new AWS client patterns.
 4. Run `npm run dev` for local reproduction when changing HTTP routes or handler logic.
-5. Keep changes scoped and add a short explanation in PRs about AWS resource impacts.
+5. For API or route changes, inspect `src/storage/routes.js` and verify header expectations.
+6. For infrastructure changes, update `serverless.yaml` and `aws/*` together and document the impact.
+7. Keep changes scoped and add a short explanation in PRs about AWS resource impacts.
 
 Common tasks and useful pointers
 
