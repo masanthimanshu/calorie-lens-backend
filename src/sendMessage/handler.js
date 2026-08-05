@@ -1,4 +1,4 @@
-import { logger } from "#core/runtime_logs.js";
+import { sendMessage } from "./service.js";
 
 export const handler = async (event) => {
   for (const record of event.Records) {
@@ -6,7 +6,7 @@ export const handler = async (event) => {
       const newImage = record.dynamodb.NewImage;
 
       const data = newImage.result.S;
-      logger.info(`Received new message: ${data}`);
+      sendMessage(data);
     }
   }
 };

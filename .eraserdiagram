@@ -1,0 +1,74 @@
+cloud-architecture-diagram
+
+title Calorie Lens Diagram
+
+Input Module {
+    Upload [icon: upload]
+}
+
+Output Module {
+    Telegram Bot [icon: telegram]
+}
+
+AWS Cloud [icon: aws] {
+    Storage {
+        s3 Bucket [icon: aws-s3]
+    }
+    
+    Upload Module {
+        API Gateway [icon: aws-api-gateway]
+        Upload Service [icon: aws-lambda]
+    }
+    
+    Processing Module {
+        Processing Service [icon: aws-lambda]
+        Base64 Image [icon: image]
+    }
+    
+    Messaging Module {
+        Notification Service [icon: aws-lambda]
+    }
+    
+    Database {
+        DynamoDB [icon: aws-dynamodb]
+    }
+    
+    LLM {
+        AWS Bedrock [icon: aws-bedrock]
+    }
+    
+    Secrets{
+        Parameter Store [icon: aws-ssm]
+    }
+    
+    Logs {
+        CloudWatch [icon: aws-cloudwatch]
+    }
+}
+
+// Upload
+Input Module <-> Upload Module : Request
+API Gateway <--> Upload Service : Pre-signed URL
+
+// Processing
+Processing Module <--> LLM : Invoke Model
+Processing Module --> Database : Store Metadata
+Processing Service <--> Base64 Image : Convert Image
+
+// Messaging
+Messaging Module <--> LLM : Invoke Model
+Database --> Messaging Module : DynamoDB Stream
+Messaging Module -> Output Module : Send Message
+
+// Storage
+Input Module --> Storage : Upload
+Storage --> Processing Module : Object Created
+
+// Secrets
+Secrets --> LLM : System Prompt
+Secrets --> Messaging Module : Telegram Bot Token
+
+// Logs
+Logs -- Upload Module : Logs
+Logs -- Messaging Module : Logs
+Logs -- Processing Module : Logs
