@@ -1,5 +1,5 @@
 import { processImage } from "./service.js";
-import { logger } from "#core/runtime_logs.js";
+import { logger } from "#core/cloudwatch_logs.js";
 import { writeData } from "#core/dynamo_client.js";
 
 export const handler = async (event) => {

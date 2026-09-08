@@ -53,7 +53,7 @@ export async function invokeModelForText(prompt) {
     body: JSON.stringify({
       max_tokens: 100,
       temperature: 0.8,
-      system_instruction: { text: "Write a message" },
+      system_instruction: { text: "Write a user-friendly message" },
       messages: [{ role: "user", content: prompt }],
     }),
   });

@@ -1,4 +1,4 @@
-import { logger } from "#core/runtime_logs.js";
+import { logger } from "#core/cloudwatch_logs.js";
 import { cleanJson } from "#utils/clean_json.js";
 import { getImageFromS3 } from "#core/s3_client.js";
 import { optimizeImage } from "#utils/optimize_image.js";

@@ -1,5 +1,5 @@
 import crypto from "node:crypto";
-import { logger } from "#core/runtime_logs.js";
+import { logger } from "#core/cloudwatch_logs.js";
 import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
 import { DynamoDBDocumentClient, PutCommand } from "@aws-sdk/lib-dynamodb";
 
