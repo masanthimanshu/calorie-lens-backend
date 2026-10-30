@@ -1,8 +1,8 @@
 import sharp from "sharp";
 
 export async function optimizeImage(buffer) {
-  const resized = await sharp(buffer).resize({ width: 512 });
-  const optimized = await resized.webp({ quality: 75 });
+  const resized = sharp(buffer).resize({ width: 512 });
+  const optimized = resized.webp({ quality: 75 });
 
   return optimized.toBuffer();
 }

@@ -30,3 +30,21 @@ Resources:
                 TransitionInDays: 10
             AbortIncompleteMultipartUpload:
               DaysAfterInitiation: 5
+
+  # AWS SQS Dead Letter Queue
+  CalorieLensDeadLetterQueue:
+    Type: AWS::SQS::Queue
+    Properties:
+      QueueName: calorie-lens-dead-letter-queue
+
+  # AWS SQS Queue
+  CalorieLensQueue:
+    Type: AWS::SQS::Queue
+    Properties:
+      QueueName: calorie-lens-queue
+      RedrivePolicy:
+        deadLetterTargetArn:
+          Fn::GetAtt:
+            - CalorieLensDeadLetterQueue
+            - Arn
+        maxReceiveCount: 3

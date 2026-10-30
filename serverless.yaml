@@ -12,6 +12,8 @@ provider:
     CURRENT_AWS_REGION: ap-south-1
     TABLE_NAME: calorie-lens-data-table
     BUCKET_NAME: calorie-lens-assets-bucket
+    QUEUE_URL:
+      Ref: CalorieLensQueue
 
   iam: ${file(aws/iam.yaml)}
 
@@ -39,11 +41,11 @@ functions:
   sendMessage:
     handler: src/sendMessage/handler.handler
     events:
-      - stream:
-          type: dynamodb
+      - sqs:
           arn:
             Fn::GetAtt:
-              - CalorieLensDataTable
-              - StreamArn
+              - CalorieLensQueue
+              - Arn
+          batchSize: 1
 
 resources: ${file(aws/resources.yaml)}

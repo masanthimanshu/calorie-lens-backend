@@ -26,6 +26,8 @@ AWS Cloud [icon: aws] {
     }
     
     Messaging Module {
+        Notification DLQ [icon: aws-sqs]
+        Notification Queue [icon: aws-sqs]
         Notification Service [icon: aws-lambda]
     }
     
@@ -56,8 +58,10 @@ Processing Module --> Database : Store Metadata
 Processing Service <--> Base64 Image : Convert Image
 
 // Messaging
+Processing Module --> Notification Queue : Enqueue Result
+Notification Queue --> Notification Service : SQS Event
+Notification Queue --> Notification DLQ : Redrive Policy (3 Retries)
 Messaging Module <--> LLM : Invoke Model
-Database --> Messaging Module : DynamoDB Stream
 Messaging Module -> Output Module : Send Message
 
 // Storage

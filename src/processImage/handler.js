@@ -1,5 +1,6 @@
 import { processImage } from "./service.js";
 import { logger } from "#core/cloudwatch_logs.js";
+import { sendMessage } from "#core/sqs_client.js";
 import { writeData } from "#core/dynamo_client.js";
 
 export const handler = async (event) => {
@@ -11,6 +12,7 @@ export const handler = async (event) => {
 
     const result = await processImage(key);
     await writeData({ key, result });
+    await sendMessage(result);
 
     logger.info("Image processed successfully:", { key, result });
   } catch (error) {

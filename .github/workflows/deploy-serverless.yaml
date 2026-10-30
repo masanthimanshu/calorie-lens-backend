@@ -1,9 +1,10 @@
 name: Deploy Serverless Function
 
 on:
-  push:
-    branches:
-      - main
+  workflow_run:
+    workflows: ["Check Code"]
+    types:
+      - completed
 
 jobs:
   deploy:

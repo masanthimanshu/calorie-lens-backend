@@ -40,6 +40,21 @@ role:
       Resource:
         - arn:aws:s3:::calorie-lens-assets-bucket/*
 
+    # AWS SQS
+    - Effect: Allow
+      Action:
+        - sqs:SendMessage
+        - sqs:ReceiveMessage
+        - sqs:DeleteMessage
+        - sqs:GetQueueAttributes
+      Resource:
+        - Fn::GetAtt:
+            - CalorieLensQueue
+            - Arn
+        - Fn::GetAtt:
+            - CalorieLensDeadLetterQueue
+            - Arn
+
     # AWS Marketplace
     - Effect: Allow
       Action:
