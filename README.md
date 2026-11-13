@@ -9,7 +9,7 @@
 [![Check Code](https://github.com/masanthimanshu/calorie-lens-backend/actions/workflows/check-code.yaml/badge.svg)](https://github.com/masanthimanshu/calorie-lens-backend/actions/workflows/check-code.yaml)
 [![License: ISC](https://img.shields.io/badge/License-ISC-blue.svg)](https://opensource.org/licenses/ISC)
 
-> An event-driven, serverless backend powered by AWS Bedrock multimodal AI that analyzes meal photos, estimates calories and macros, and delivers friendly nutritional breakdowns to Telegram via Amazon SQS.
+> An event-driven, serverless backend powered by AWS Bedrock multimodal AI that analyzes meal photos, estimates calories and macros, and delivers friendly nutritional breakdowns to Telegram via Amazon SQS
 
 ---
 
